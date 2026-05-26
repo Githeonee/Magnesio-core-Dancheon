@@ -1,14 +1,14 @@
 # Danchen CMEZ — GEE Spatial Analysis
 Magnesio-Core: 단천 마그네사이트 스마트 경제특구 입지 타당성 분석
 
-> 2026 남북교류와 미래 국토비전 작품 공모전 제출작  
+> 2026 남북교류와 미래 국토비전 작품 공모전 제출작
 > 주최: 대한국토·도시계획학회 / 후원: 국토교통부·통일부
 
 ---
 
 ## 프로젝트 개요
 
-본 저장소는 함경남도 단천시를 대상으로 한 핵심광물 경제특구(CMEZ: Critical Minerals Economic Zone) 입지 타당성 분석을 위한 Google Earth Engine(GEE) 코드를 포함합니다.
+본 저장소는 함경남도 단천시를 대상으로 한 핵심광물 경제특구(CMEZ: Critical Minerals Economic Zone) 입지 타당성 분석을 위한 Google Earth Engine(GEE) 코드 및 Python 스니펫을 포함합니다.
 
 중국의 마그네슘 공급망 독점(글로벌 점유율 60~80%)에 대응하여, 북한 단천 지역의 마그네사이트 자원(용양광산 확정 매장량 7.7억톤, MgO 45.82%)을 활용한 탈중국 핵심소재 공급망 거점 조성 가능성을 GIS 기반으로 검증합니다.
 
@@ -17,7 +17,7 @@ Magnesio-Core: 단천 마그네사이트 스마트 경제특구 입지 타당성
 ## 파일 구조
 
 ```
-danchen-cmez-gee/
+Magnesio-core-Dancheon/
 │
 ├── README.md                         # 프로젝트 설명
 ├── .gitignore                        # Git 제외 파일
@@ -26,7 +26,10 @@ danchen-cmez-gee/
 ├── 02_swir_spectral_analysis.js      # SWIR 분광 분석 (Mg-OH 흡수대)
 ├── 03_terrain_analysis.js            # DEM 기반 지형·경사도 분석 + Zone B 면적
 ├── 04_flood_risk_analysis.js         # 홍수 리스크 분석 + 최종 유효 Zone B
-└── 05_export.js                      # GeoTIFF Export (Google Drive)
+├── 05_export.js                      # GeoTIFF Export (Google Drive)
+│
+└── python/
+    └── zone_b_analysis.py            # 핵심 로직 Python 구현 + Haversine 거리 산출
 ```
 
 ---
@@ -35,16 +38,29 @@ danchen-cmez-gee/
 
 | 항목 | 수치 | 분석 방법 |
 |------|------|---------|
-| 용양-대흥 광산 간 거리 | **19.7 km** | GEE 거리 계산 |
-| CMEZ 전체 Zone B 면적 | **31.88 km²** | NASA SRTM DEM, 경사도 5도 이하 |
-| 홍수 고위험 구역 면적 | **5.86 km²** | JRC GSW, 하천 인접 500m |
-| **최종 유효 Zone B** | **2.19 km²** | 홍수 리스크 제외 후 |
-| CMEZ 고도 중앙값 | **1,163.5 m** | NASA SRTM DEM |
-| 용양광산 평균 경사도 | **24.2도** | NASA SRTM DEM |
-| 대흥광산 평균 경사도 | **22.3도** | NASA SRTM DEM |
+| 용양-대흥 광산 간 거리 | 19.7 km | GEE 거리 계산 |
+| CMEZ 전체 Zone B 면적 | 31.88 km² | NASA SRTM DEM, 경사도 5도 이하 |
+| 홍수 고위험 구역 면적 | 5.86 km² | JRC GSW, 하천 인접 500m |
+| 최종 유효 Zone B | 2.19 km² | 홍수 리스크 제외 후 |
+| CMEZ 고도 중앙값 | 1,163.5 m | NASA SRTM DEM |
+| 용양광산 평균 경사도 | 24.2도 | NASA SRTM DEM |
+| 대흥광산 평균 경사도 | 22.3도 | NASA SRTM DEM |
 
-> 최종 유효 Zone B(2.19 km²)는 고려아연 온산제련소(약 1.42 km²) 대비 약 1.5배 규모로,  
+> 최종 유효 Zone B(2.19 km²)는 고려아연 온산제련소(약 1.42 km²) 대비 약 1.5배 규모로,
 > 마그네시아 크링카 정련·가공 특화 클러스터 입지에 충분한 면적이다.
+
+---
+
+##  물류 네트워크 거리 (Haversine 산출, WGS84 기준)
+
+| 구간 | 직선거리 | 비고 |
+|------|---------|------|
+| 용양광산 → 단천항 | 55.2 km | 핵심 물류 루트 |
+| 대흥광산 → 단천항 | 74.0 km | |
+| 광산 중심점 → 단천항 | 64.6 km | 두 광산 평균 |
+| 용양 ↔ 대흥 광산 | 19.8 km | GEE 19.7km와 일치 |
+
+> 평라선 철도 실제 경로는 산악 지형 우회로 직선거리 대비 1.2~1.5배 수준으로 추정.
 
 ---
 
@@ -58,13 +74,15 @@ danchen-cmez-gee/
 
 ---
 
-## 사용 방법
+## 🛠 사용 방법
 
-### 사전 요건
+### GEE JavaScript API
+
+사전 요건
 - Google Earth Engine 계정 (Community 등급 이상)
 - [GEE Code Editor](https://code.earthengine.google.com) 접속
 
-### 실행 순서
+실행 순서
 
 ```
 1. code.earthengine.google.com 접속
@@ -74,10 +92,47 @@ danchen-cmez-gee/
 5. Google Drive > GEE_Danchen 폴더에서 결과 확인
 ```
 
-### 권장 실행 순서
+권장 실행 순서
 
 ```
 01 → 02 → 03 → 04 → 05
+```
+
+### GEE Python API (로컬·Colab)
+
+사전 요건
+
+```bash
+pip install earthengine-api
+```
+
+실행
+
+```bash
+# 최초 1회 인증
+earthengine authenticate
+
+# 분석 실행
+python python/zone_b_analysis.py
+```
+
+주요 출력
+
+```
+=== 단천 CMEZ GEE 분석 결과 ===
+전체 Zone B (경사도 5도 이하): 31.88 km²
+홍수 고위험 구역 (500m):       5.86 km²
+최종 유효 Zone B:            2.19 km²
+
+[고도 분포]
+  하위 10%: 827.6 m
+  하위 25%: 995.5 m
+  중앙값:   1163.5 m
+
+[물류 네트워크 직선거리 — Haversine 산출]
+  용양광산 → 단천항:  55.2 km
+  대흥광산 → 단천항:  74.0 km
+  용양 ↔ 대흥 광산:  19.8 km
 ```
 
 ---
@@ -92,7 +147,7 @@ danchen-cmez-gee/
 
 ---
 
-## 참고 문헌
+## 📚 참고 문헌
 
 | 자료 | 내용 | URL |
 |------|------|-----|
@@ -117,20 +172,22 @@ danchen-cmez-gee/
 3. 본 분석은 남북관계 호전 및 교류·협력이
    가능한 상황을 전제로 한 정책 기획 목적임
 
-4. 단천항 수심·하역 능력·함경선 철도 상태는
+4. 단천항 수심·하역 능력·평라선 철도 상태는
    남북 교류 재개 후 공동 실태조사를 통해 확정 필요
+
+5. 평라선 철도 미매핑 구간은 위성 이미지
+   판독 기반 수동 보완 경로이며 추정값임
 ```
 
 ---
 
 ## 작성자
 
-- **소속:** 강원대학교 부동산학과
-- **공모전:** 2026 남북교류와 미래 국토비전 작품 공모전 (학생부문)
-- **제출일:** 2026년 10월
+- 소속: 강원대학교 부동산학과
+- 공모전: 2026 남북교류와 미래 국토비전 작품 공모전 (학생부문)
 
 ---
 
-##  라이선스
+## 라이선스
 
 본 코드는 학술·연구 목적으로 공개되며 상업적 사용을 금합니다.
