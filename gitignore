@@ -1,0 +1,16 @@
+# GEE 관련
+*.tif
+*.geotiff
+*.shp
+*.dbf
+*.shx
+*.prj
+
+# OS 관련
+.DS_Store
+Thumbs.db
+
+# 개인정보
+*.key
+*.env
+config.js
