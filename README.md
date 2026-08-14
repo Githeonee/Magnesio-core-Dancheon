@@ -31,8 +31,7 @@ danchen-cmez-gee/
 ├── 03_terrain_analysis.js            # DEM 기반 지형·경사도 분석
 ├── 04_flood_risk_analysis.js         # 홍수 리스크 + 가용지 산출 (unmask 보정, 11.44 km²)
 ├── 05_export.js                      # GeoTIFF Export (Google Drive)
-├── 06_phase1_port_zone.js    # Sentinel-2 커버리지 검증 (2020–2024, 구름<30%)
-│
+├── 06_phase1_port_zone.js            # 단천항 5km 1단계 구역 + Zone B/C/E 면적 산출 (11.44/1.85km²)
 └── python/
     └── zone_b_analysis.py            # Zone B/C/E 면적 재현 검증 스크립트
 ```
